@@ -11,23 +11,29 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from enum import Enum
 
-from envcrypto import LevelConfig
-
-try:
-    a = LevelConfig()
-except:
-    pass
+from envcrypto import DeployLevel
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+class Deployment(Enum):
+    """A run level based on the enviroment variables."""
+
+    DEBUG = 'debug'
+    STAGING = 'staging'
+    PRODUCTION = 'production'
+
+
+DEPLOY = DeployLevel(levels=Deployment)
+
+if DEPLOY.LEVEL is Deployment.DEBUG:
+    DEBUG = True
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'm81y@a%92thxu!ta2bv-#w^m4l7#*_cl*9p=gv989tbn(h#6p)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

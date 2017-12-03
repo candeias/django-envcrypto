@@ -1,3 +1,3 @@
 """Initiates the available classes."""
 from .crypto import StateList
-from .levels import LevelConfig
+from .levels import DeployLevel
