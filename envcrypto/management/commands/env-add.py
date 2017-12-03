@@ -16,5 +16,5 @@ class Command(BaseCommand):
         """Create a new enviroment file with the name and a new KEY."""
         stl = StateList(key=key)
         print("Adding to variable to enviroment", stl.name)
-        stl.add_active(name, value)
+        stl.add_active(name.upper(), value)
         stl.save_active()

@@ -1,13 +1,27 @@
 """LevelConfig to describe levels."""
 import os
 import sys
+from enum import Enum
 
 from .crypto import StateList
 
 # from socket import gethostbyname, gethostname
 
 
+class Deployment(Enum):
+    """A basic run level based on the enviroment variables
+
+    You can create your own deployment by creating a Enum with multiple deployment types
+    """
+
+    DEBUG = 'debug'
+    STAGING = 'staging'
+    PRODUCTION = 'production'
+
+
 class NoEnvFileFound(Exception):
+    """Warns the user that we haven't defined any enviroment class."""
+
     pass
 
 
@@ -16,6 +30,11 @@ class DeployLevel(object):
 
     def __init__(self, levels=None):
         """Set the level using the enviroment variable."""
+        if levels is None:
+            levels = Deployment
+        assert not isinstance(
+            levels, Enum), "Pleace pass a Enum as the run levels"
+
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
         self.stl = StateList()
         self.levels = levels
