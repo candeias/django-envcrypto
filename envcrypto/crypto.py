@@ -7,6 +7,7 @@ from enum import Enum
 
 from cryptography.fernet import Fernet
 
+
 # from socket import gethostbyname, gethostname
 
 

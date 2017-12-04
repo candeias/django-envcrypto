@@ -3,7 +3,8 @@ import os
 import sys
 from enum import Enum
 
-from .crypto import StateList
+from .crypto import NoEnvKeyFound, StateList
+
 
 # from socket import gethostbyname, gethostname
 
@@ -36,16 +37,23 @@ class DeployLevel(object):
             levels, Enum), "Pleace pass a Enum as the run levels"
 
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
-        self.stl = StateList()
+        try:
+            self.stl = StateList()
+        except NoEnvKeyFound as err:
+            self.stl = None
+            print("Warning - You haven't setup your enviroment KEY.")
+
         self.levels = levels
         self.current_level = None
 
         # figure out the run level, using the key
-        self.find_current_level()
-        self.load_globals()
+        if self.stl is not None:
+            self.find_current_level()
+            self.load_globals()
 
     def find_current_level(self):
         """Find the current level."""
+
         for level in self.levels:
             if level.value == self.stl.name:
                 self.current_level = level

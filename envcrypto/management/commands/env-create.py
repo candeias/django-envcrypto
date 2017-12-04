@@ -1,3 +1,4 @@
+
 """Creates a new enviroment stage."""
 import json
 import random
@@ -14,7 +15,7 @@ class Command(BaseCommand):
         parser.add_argument('enviroment_name', type=str)
         parser.add_argument('--parent', type=str)
 
-    def handle(self, *args, enviroment_name=None, parent=False, ** options):
+    def handle(self, *args, enviroment_name=None, parent=False, **options):
         """Create a new enviroment file with the name and a new KEY."""
         print("Creating a new enviroment file", enviroment_name)
         new_key = Encrypter.generate_key()

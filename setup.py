@@ -7,7 +7,7 @@ setup(name='django-envcrypto',
       long_description='Store Django Enviromental Variables for multiple deployments, easy and securely.',
       author='Rogerio Candeias',
       author_email='rogerio.candeias@gmail.com',
-      url='https://github.com/candeias/django-envcrypto',
+      url='https://github.com/FoundersFactory/django-envcrypto',
       license='BSD2',
       packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
       classifiers=[
