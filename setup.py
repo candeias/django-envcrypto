@@ -2,7 +2,7 @@
 from setuptools import find_packages, setup
 
 setup(name='django-envcrypto',
-      version='0.8.0.1',
+      version='0.8.1.0',
       description='A safe way to store Django Enviromental Variables',
       long_description='Store Django Enviromental Variables for multiple deployments, easy and securely.',
       author='Rogerio Candeias',
