@@ -2,9 +2,9 @@ machine:
   python:
     version: 3.6.2
   timezone: Europe/London
-    environment:
-      PYPI_HOST: "https://pypi.python.org/pypi"
-      PYPI_USERNAME: "candeias"
+  environment:
+    PYPI_HOST: "https://pypi.python.org/pypi"
+    PYPI_USERNAME: "candeias"
 
 general:
   branches:
