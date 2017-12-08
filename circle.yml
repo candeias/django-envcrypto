@@ -15,6 +15,7 @@ general:
 dependencies:
   override:
     - pip3 install -r requirements.txt
+    - pip3 install wheel
     - pip3 install twine
 
 test:
