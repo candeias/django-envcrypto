@@ -18,4 +18,5 @@ echo "repository=$PYPI_HOST" >> ~/.pypirc
 echo "username=$PYPI_USERNAME" >> ~/.pypirc
 echo "password=$PYPI_PASSWORD" >> ~/.pypirc
 
-python setup.py sdist upload -r pypi-private
+python setup.py bdist_wheel
+twine upload dist/*
