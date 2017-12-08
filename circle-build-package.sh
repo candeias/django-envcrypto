@@ -14,7 +14,7 @@ fi
 echo "[distutils]" >> ~/.pypirc
 echo "index-servers = pypi-private" >> ~/.pypirc
 echo "[pypi-private]" >> ~/.pypirc
-echo "repository=https://$PYPI_HOST" >> ~/.pypirc
+echo "repository=$PYPI_HOST" >> ~/.pypirc
 echo "username=$PYPI_USERNAME" >> ~/.pypirc
 echo "password=$PYPI_PASSWORD" >> ~/.pypirc
 
