@@ -1,0 +1,27 @@
+machine:
+  python:
+    version: 3.6.2
+  timezone: Europe/London
+    environment:
+      PYPI_HOST: "https://pypi.python.org/pypi"
+      PYPI_USERNAME: "candeias"
+
+general:
+  branches:
+    only:
+      - development
+      - master
+
+dependencies:
+  override:
+    - pip3 install -r requirements.txt
+
+test:
+  override:
+   - exit 0
+
+deployment:
+  build_package:
+    branch: master
+    commands:
+      - ./circle-build-package.sh
