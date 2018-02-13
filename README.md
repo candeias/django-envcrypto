@@ -142,6 +142,14 @@ if settings.DEPLOY.LEVEL in [Deployment.DEBUG, Deployment.STAGING]:
 
 ## Notes
 
+### Accessing the secrets
+
+Assuming you've just added a TWILIO_AUTH_TOKEN secret key through the steps above, it's worth noticing that in order to access the variable from anywhere within your project, all you'll have to do is:
+```python
+import settings
+twilio_token = settings.TWILIO_AUTH_TOKEN
+```
+
 ### Compatibility
 
 Currently, Django-Envcrypto supports [python](https://www.python.org/) (3.4+) because it uses Enumerators (Enum) under the hood. We might extend the support in the future.
