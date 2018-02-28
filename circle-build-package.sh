@@ -6,7 +6,7 @@ if [ -z "$CI" ]; then
 fi
 
 if [[ $CIRCLE_BRANCH != "master" ]]; then
-    echo "Will only continue for master builds"
+    echo "Will build on master branch"
     exit
 fi
 

@@ -1,4 +1,4 @@
-"""Creates a new enviroment stage."""
+"""Creates a new environment stage."""
 from django.core.management.base import BaseCommand
 
 from ...crypto import StateList
@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('-t', '--transcode-key', type=str, required=True)
 
     def handle(self, *args, name=None,  value=None, key=None, transcode_key=None, ** options):
-        """Create a new enviroment file with the name and a new KEY."""
+        """Create a new environment file with the name and a new KEY."""
         stl = StateList(key=key)
         new_state = StateList(key=transcode_key)
 

@@ -3,37 +3,13 @@ import glob
 import json
 import os
 from binascii import a2b_base64, b2a_base64
-from enum import Enum
 
 from cryptography.fernet import Fernet
 
-
-# from socket import gethostbyname, gethostname
-
-
-class NoEnvKeyFound(Exception):
-    """An error in configuration."""
-    pass
-
-
-class NoEnvFileFound(Exception):
-    pass
-
-
-class NoVarFound(Exception):
-    pass
-
-
-class NoStateFound(Exception):
-    pass
-
-
-class NoValidKeyFound(Exception):
-    pass
+from .exceptions import NoDeploymentLevelFound, NoEnvKeyFound, NoValidKeyFound
 
 
 class Encrypter(object):
-
     @classmethod
     def generate_key(cls):
         """Generate a random key."""
@@ -64,7 +40,7 @@ class StateList(object):
         """Read the list of states."""
         self.key = key
         if key is None:
-            # We try to load the key from the enviroment
+            # We try to load the key from the environment
             self.key = self.read_env("KEY")
 
         try:
@@ -79,11 +55,12 @@ class StateList(object):
         self.read_list()
 
     def read_env(self, name):
-        """Read a variable name from the enviroment."""
+        """Read a variable name from the environment."""
         result = os.environ.get(name, None)
         if result is None:
             raise NoEnvKeyFound(
-                "The {} variable is not setup in the enviroment".format(name))
+                "The {} variable is not setup in the environment.\nIn order for django-envcrypto to work you should either supply a KEY in the environment variables or through the command line.".
+                format(name))
         return result
 
     def read_list(self):
@@ -99,7 +76,7 @@ class StateList(object):
         env_object = json.loads(open(filepath).read())
         self.states.append(env_object)
 
-        # try to check if we can read this enviroment
+        # try to check if we can read this environment
         try:
             result = self.encrypter.decrypt(env_object['signed_name'])
         except:
@@ -126,9 +103,11 @@ class StateList(object):
 
     def save_active(self):
         """Save the active state."""
-        with open('{}.env'.format(self.states[self.active_state]['name']), 'w') as f:
-            f.write(json.dumps(
-                self.states[self.active_state], indent=4, sort_keys=True))
+        with open('{}.env'.format(self.states[self.active_state]['name']),
+                  'w') as f:
+            f.write(
+                json.dumps(
+                    self.states[self.active_state], indent=4, sort_keys=True))
 
     def get_state_from_name(self, name):
         """Return the state for this name."""
@@ -137,7 +116,7 @@ class StateList(object):
                 return self.states[i]
 
         # if we did not find the state raise an exception
-        raise NoStateFound("Could not find {} state".format(name))
+        raise NoDeploymentLevelFound("Could not find {} state".format(name))
 
     def get_names_from_state(self, state):
         """Return the names in the state."""
@@ -165,7 +144,8 @@ class StateList(object):
         """Return a value from the active state."""
         if name not in self.states[self.active_state]:
             raise NoVarFound(
-                "Variable {} not defined on enviroment {}.".format(name, self.name))
+                "Variable {} not defined on environment {}.".format(
+                    name, self.name))
 
         return self.encrypter.decrypt(self.states[self.active_state][name])
 
