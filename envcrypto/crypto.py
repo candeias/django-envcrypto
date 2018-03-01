@@ -2,6 +2,7 @@
 import glob
 import json
 import os
+import random
 from binascii import a2b_base64, b2a_base64
 
 from cryptography.fernet import Fernet
@@ -26,6 +27,33 @@ class Encrypter(object):
     def decrypt(self, digest):
         ciphertext = a2b_base64(digest.encode("utf-8"))
         return self.fernet.decrypt(ciphertext).decode("utf-8")
+
+
+class State(object):
+    """A State object."""
+
+    DJANG_SECRET_SIZE = 50
+
+    def __init__(self, name):
+        """Set the variables."""
+        self.key = Encrypter.generate_key()
+        self.name = name
+
+    def save(self, prefix=""):
+        """Save the State to disk."""
+        encrypter = Encrypter(self.key)
+        result = {}
+        result['name'] = self.name
+        result['signed_name'] = encrypter.encrypt(self.name)
+
+        # set the django secret key
+        secret_key = ''.join(random.SystemRandom().choice(
+            'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)')
+            for i in range(self.DJANG_SECRET_SIZE))
+        result['SECRET_KEY'] = encrypter.encrypt(secret_key)
+
+        with open('{}-{}.env'.format(prefix, self.name), 'w') as f:
+            f.write(json.dumps(result, indent=4, sort_keys=True))
 
 
 class StateList(object):
