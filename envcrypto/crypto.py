@@ -6,7 +6,8 @@ from binascii import a2b_base64, b2a_base64
 
 from cryptography.fernet import Fernet
 
-from .exceptions import NoDeploymentLevelFound, NoEnvKeyFound, NoValidKeyFound
+from .exceptions import (NoDeploymentLevelFound, NoEnvKeyFound,
+                         NoValidKeyFound, NoVarFound)
 
 
 class Encrypter(object):
@@ -36,10 +37,10 @@ class StateList(object):
     # the list of states that can't be copied to the outside
     PROTECTED_STATES = {'name': 1, 'signed_name': 1, 'SECRET_KEY': 1}
 
-    def __init__(self, *args, key=None, **kwargs):
+    def __init__(self, *args, key=None, read_from_env=True, **kwargs):
         """Read the list of states."""
         self.key = key
-        if key is None:
+        if key is None and read_from_env:
             # We try to load the key from the environment
             self.key = self.read_env("KEY")
 
@@ -104,8 +105,8 @@ class StateList(object):
     def save_active(self):
         """Save the active state."""
         with open('{}.env'.format(self.states[self.active_state]['name']),
-                  'w') as f:
-            f.write(
+                  'w') as f_file:
+            f_file.write(
                 json.dumps(
                     self.states[self.active_state], indent=4, sort_keys=True))
 
@@ -117,18 +118,6 @@ class StateList(object):
 
         # if we did not find the state raise an exception
         raise NoDeploymentLevelFound("Could not find {} state".format(name))
-
-    def get_names_from_state(self, state):
-        """Return the names in the state."""
-        state = self.get_state_from_name(state)
-
-        result = []
-
-        for state in self.states[self.active_state].keys():
-            if state not in self.PROTECTED_STATES:
-                result.append(state)
-
-        return result
 
     def get_names_from_active(self):
         """Return the names from the active."""

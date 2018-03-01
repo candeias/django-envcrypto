@@ -19,6 +19,12 @@ class NoVarFound(Exception):
     pass
 
 
+class NoDeploymentEnum(Exception):
+    """The Deployment is not an Enum object."""
+
+    pass
+
+
 class NoDeploymentLevelFound(Exception):
     """The Deployment Level could not be found."""
 

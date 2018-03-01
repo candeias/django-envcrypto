@@ -4,7 +4,7 @@ import sys
 from enum import Enum
 
 from .crypto import StateList
-from .exceptions import NoEnvFileFound, NoEnvKeyFound
+from .exceptions import NoDeploymentEnum, NoEnvFileFound, NoEnvKeyFound
 
 
 class Deployment(Enum):
@@ -25,8 +25,9 @@ class DeployLevel(object):
         """Set the level using the environment variable."""
         if levels is None:
             levels = Deployment
-        assert not isinstance(levels,
-                              Enum), "Pleace pass a Enum as the run levels"
+        else:
+            if not isinstance(levels, Enum):
+                raise NoDeploymentEnum("Please pass a Enum as the run levels")
 
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
         try:
