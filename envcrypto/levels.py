@@ -4,7 +4,7 @@ import sys
 from enum import Enum
 
 from .crypto import StateList
-from .exceptions import NoDeploymentEnum, NoEnvFileFound, NoEnvKeyFound
+from .exceptions import DeploymentIsNotAEnum, EnvFileNotFound, EnvKeyNotFound
 
 
 class Deployment(Enum):
@@ -27,12 +27,13 @@ class DeployLevel(object):
             levels = Deployment
         else:
             if not isinstance(levels, Enum):
-                raise NoDeploymentEnum("Please pass a Enum as the run levels")
+                raise DeploymentIsNotAEnum(
+                    "Please pass a Enum as the run levels")
 
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
         try:
             self.stl = StateList()
-        except NoEnvKeyFound as err:
+        except EnvKeyNotFound as err:
             self.stl = None
 
         self.levels = levels
@@ -52,7 +53,7 @@ class DeployLevel(object):
 
         if self.current_level is None:
             # we could not find a env level for this level
-            raise NoEnvFileFound(
+            raise EnvFileNotFound(
                 "Could not find encrypted env for the level {}".format(
                     self.stl.name))
 

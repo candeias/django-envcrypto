@@ -3,7 +3,7 @@ import glob
 import os
 
 from ..crypto import Encrypter, State, StateList
-from ..exceptions import NoEnvKeyFound, NoValidKeyFound
+from ..exceptions import EnvKeyNotFound, InvalidKey
 from .tests import CommonTestCase
 
 
@@ -60,11 +60,11 @@ class CryptoStateList(CommonTestCase):
     def test_invalid_key(self):
         """Invalid key should through an exception."""
         with self.assertRaises(
-                NoValidKeyFound, msg="A None KEY should raise an exception"):
+                InvalidKey, msg="A None KEY should raise an exception"):
             StateList(read_from_env=False)
 
         with self.assertRaises(
-                NoEnvKeyFound,
+                EnvKeyNotFound,
                 msg="We are reading the key from the environment variables, you should remove it."
         ):
             StateList(read_from_env=True)
