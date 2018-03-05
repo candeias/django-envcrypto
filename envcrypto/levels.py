@@ -31,11 +31,15 @@ class DeployLevel(object):
                     "Please pass a Enum as the run levels")
 
         self.levels = levels
+        self.current_level = None
 
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
         self.state = StateList(key=key).get()
 
         # use the name of the state to get the current level
+        if self.state is None:
+            return
+
         self.current_level = levels(self.state.name)
 
         self.load_globals()

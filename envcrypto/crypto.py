@@ -11,6 +11,8 @@ from .exceptions import (DeploymentLevelNotFound, EnvKeyNotFound,
                          FileWriteError, InvalidEnvFile, InvalidKey,
                          VariableExists, VariableNotFound)
 
+FILE_EXTENSION = "env"
+
 
 def read_env(name):
     """Read a variable name from the environment."""
@@ -67,7 +69,7 @@ class State(object):
                              for i in range(cls.DJANGO_SECRET_SIZE))
         result['SECRET_KEY'] = encrypter.encrypt(secret_key)
 
-        final_filename = '{}.env'.format(name)
+        final_filename = '{}.{}'.format(name, FILE_EXTENSION)
         with open(final_filename, 'w') as env_file:
             env_file.write(json.dumps(result, indent=4, sort_keys=True))
 
@@ -173,15 +175,24 @@ class StateList(object):
     def __init__(self, *args, key=None, **kwargs):
         """Read the list of states."""
         self.key = key
+        self.current_state = None
+
         if self.key is None:
-            self.key = read_env("KEY")
+            try:
+                self.key = read_env("KEY")
+            except:
+                # TODO: add a warning to the log
+                # print(
+                #     "Warning: django-envcrypto can't find a KEY in the environment. It will continue without injecting any variable."
+                # )
+                return
+
         try:
             self.encrypter = Encrypter(key=self.key)
         except:
             raise InvalidKey(
                 "The supplied key is not a valid key {}".format(key))
 
-        self.current_state = None
         self.read_list()
 
         if self.current_state is None:
@@ -194,7 +205,7 @@ class StateList(object):
 
     def read_list(self):
         """Read the list of files."""
-        env_files = glob.glob('*.env')
+        env_files = glob.glob('*.{}'.format(FILE_EXTENSION))
         for i in range(len(env_files)):
             try:
                 state = State(env_files[i], key=self.key)

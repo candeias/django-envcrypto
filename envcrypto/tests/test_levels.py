@@ -19,5 +19,6 @@ class LevelsDeployLevel(CommonTestCase):
     def test_levels_non_enum(self):
         """Deployment should be a enum."""
         with self.assertRaises(
-                DeploymentIsNotAEnum, msg="Non Enum doesn't raise an exception"):
+                DeploymentIsNotAEnum,
+                msg="Non Enum doesn't raise an exception"):
             DeployLevel(levels=self.NON_ENUM)

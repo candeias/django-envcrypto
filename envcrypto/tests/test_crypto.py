@@ -38,47 +38,48 @@ class CryptoEncrypter(CommonTestCase):
 class CryptoStateList(CommonTestCase):
     """Test the state list module."""
 
-    PREFIX = "unittest"
+    DEFAULT_LEVELS = [
+        'unittest-debug', 'unittest-staging', 'unittest-production',
+        'unittest-developer', 'unittest-microservice'
+    ]
 
-    def create_levels(self, levels=['debug', 'staging', 'production']):
+    INVALID_KEY = 'thiskeyshouldnotwork'
+
+    def create_levels(self, levels=None):
         """Create new levels, saving the required files."""
+        if levels is None:
+            levels = self.DEFAULT_LEVELS
         key_list = []
         for level in levels:
-            state = State(level)
-            state.save(prefix=self.PREFIX)
-
+            state = State.new(level)
             key_list.append(state.key)
 
         return key_list
 
     def tearDown(self):
         """Delete all unittest files."""
-        env_files = glob.glob("{}-*.env".format(self.PREFIX))
+        env_files = glob.glob("unittest-*.env")
         for unit_test_file in env_files:
             os.remove(unit_test_file)
 
     def test_invalid_key(self):
         """Invalid key should through an exception."""
         with self.assertRaises(
-                InvalidKey, msg="A None KEY should raise an exception"):
-            StateList(read_from_env=False)
+                InvalidKey, msg="An invalid key should raise a exception."):
+            StateList(key=self.INVALID_KEY)
 
-        with self.assertRaises(
-                EnvKeyNotFound,
-                msg="We are reading the key from the environment variables, you should remove it."
-        ):
-            StateList(read_from_env=True)
+        self.assertTrue(
+            StateList().get() is None,
+            msg="A None KEY should raise an exception. Are we reading the key from the environment variables?"
+        )
 
     def test_read_state_list(self):
         """Test that we can read a state list."""
-        list_of_levels = [
-            'debug', 'staging', 'developer', 'production', 'microservice'
-        ]
-        key_list = self.create_levels(list_of_levels)
+        key_list = self.create_levels(self.DEFAULT_LEVELS)
 
         # now make sure we can read those
         for i in range(len(key_list)):
             key = key_list[i]
-            state_list = StateList(key=key)
-            self.assertEqual(state_list.name, list_of_levels[i],
+            state = StateList(key=key).get()
+            self.assertEqual(state.name, self.DEFAULT_LEVELS[i],
                              'Could not read an environment from a key')
