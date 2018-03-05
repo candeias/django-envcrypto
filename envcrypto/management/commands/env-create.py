@@ -13,8 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, environment_name=None, **options):
         """Create a new environment file with the name and a new KEY."""
         print("Creating a new environment file", environment_name)
-        state = State(environment_name)
-        state.save()
+        state = State.new(environment_name)
 
         print()
         print(

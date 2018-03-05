@@ -12,9 +12,9 @@ class Command(BaseCommand):
         parser.add_argument('value', type=str)
         parser.add_argument('-k', '--key', type=str)
 
-    def handle(self, *args, name=None,  value=None, key=None, ** options):
+    def handle(self, *args, name=None, value=None, key=None, **options):
         """Create a new environment file with the name and a new KEY."""
-        stl = StateList(key=key)
-        print("Adding to variable to environment", stl.name)
-        stl.add_active(name.upper(), value)
-        stl.save_active()
+        state = StateList(key=key).get()
+        print("Adding to variable to environment", state.name)
+        state.add(name, value)
+        state.save()

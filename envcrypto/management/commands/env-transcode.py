@@ -11,13 +11,13 @@ class Command(BaseCommand):
         parser.add_argument('-k', '--key', type=str)
         parser.add_argument('-t', '--transcode-key', type=str, required=True)
 
-    def handle(self, *args, name=None,  value=None, key=None, transcode_key=None, ** options):
+    def handle(self, *args, key=None, transcode_key=None, **options):
         """Create a new environment file with the name and a new KEY."""
-        stl = StateList(key=key)
-        new_state = StateList(key=transcode_key)
+        old_state = StateList(key=key).get()
+        new_state = StateList(key=transcode_key).get()
 
         # we iterate the list of states on the current one to the new
-        for name in stl.get_names_from_active():
-            new_state.add_active(name, stl.get_from_active(name))
+        for key_var, value in old_state:
+            new_state.add(key_var, value)
 
-        new_state.save_active()
+        new_state.save()
