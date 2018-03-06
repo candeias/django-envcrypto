@@ -3,7 +3,7 @@ import glob
 import os
 
 from ..crypto import Encrypter, State, StateList
-from ..exceptions import EnvKeyNotFound, InvalidKey
+from ..exceptions import EnvKeyNotFound, InvalidKey, VariableExists
 from .tests import CommonTestCase
 
 
@@ -35,15 +35,13 @@ class CryptoEncrypter(CommonTestCase):
             "Decrypted messages are not the same")
 
 
-class CryptoStateList(CommonTestCase):
-    """Test the state list module."""
+class StateCreationTestCase(CommonTestCase):
+    """Create and destroy unittests."""
 
     DEFAULT_LEVELS = [
         'unittest-debug', 'unittest-staging', 'unittest-production',
         'unittest-developer', 'unittest-microservice'
     ]
-
-    INVALID_KEY = 'thiskeyshouldnotwork'
 
     def create_levels(self, levels=None):
         """Create new levels, saving the required files."""
@@ -61,6 +59,81 @@ class CryptoStateList(CommonTestCase):
         env_files = glob.glob("unittest-*.env")
         for unit_test_file in env_files:
             os.remove(unit_test_file)
+
+        super().tearDown()
+
+
+class CryptoState(StateCreationTestCase):
+    """Test operation of the State object."""
+
+    VARKEY = "UNITTEST"
+    VARVALUE = "value"
+
+    def create_and_read_level(self):
+        """Create and reads back a level."""
+        key = self.create_levels(levels=[self.DEFAULT_LEVELS[0]])[0]
+        return self.read_level(key)
+
+    def read_level(self, key):
+        """Read a level using a key."""
+        return StateList(key=key).get()
+
+    def test_create_new(self):
+        """Create a new State."""
+        state = self.create_and_read_level()
+
+        self.assertEqual(state.name, self.DEFAULT_LEVELS[0],
+                         "Env file created with a different name.")
+        self.assertEqual(len(state.django_secret), State.DJANGO_SECRET_SIZE)
+
+    def test_add_variable(self):
+        """Add a variable."""
+        # Add variable the first time
+        state = self.create_and_read_level()
+        state.add(self.VARKEY, self.VARVALUE)
+        state.save()
+
+        # check the variable is there
+        new_state = StateList(key=state.key).get()
+        self.assertIn(self.VARKEY, new_state.data)
+        self.assertEqual(new_state.data[self.VARKEY], self.VARVALUE)
+
+        # try to add the same variable and receive the exception
+        with self.assertRaises(
+                VariableExists,
+                msg="Editing a variable without force was allowed"):
+            new_state.add(self.VARKEY, self.VARVALUE)
+
+        # now add the variable with the force parameter and check again if the
+        # variable changed
+        new_var = "{}-{}".format(self.VARVALUE, self.VARVALUE)
+
+        new_state.add(self.VARKEY, new_var, force=True)
+        new_state.save()
+
+        # check the variable is there
+        last_state = StateList(key=state.key).get()
+        self.assertIn(self.VARKEY, last_state.data)
+        self.assertEqual(last_state.data[self.VARKEY], new_var)
+
+    def test_remove_variable(self):
+        """Remove a variable from the State."""
+        state = self.create_and_read_level()
+        state.add(self.VARKEY, self.VARVALUE)
+        state.save()
+
+        new_state = StateList(key=state.key).get()
+        new_state.remove(self.VARKEY)
+        new_state.save()
+
+        final_state = StateList(key=state.key).get()
+        self.assertNotIn(self.VARKEY, final_state.data)
+
+
+class CryptoStateList(StateCreationTestCase):
+    """Test the state list module."""
+
+    INVALID_KEY = 'thiskeyshouldnotwork'
 
     def test_invalid_key(self):
         """Invalid key should through an exception."""

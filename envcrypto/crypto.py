@@ -11,8 +11,6 @@ from .exceptions import (DeploymentLevelNotFound, EnvKeyNotFound,
                          FileWriteError, InvalidEnvFile, InvalidKey,
                          VariableExists, VariableNotFound)
 
-FILE_EXTENSION = "env"
-
 
 def read_env(name):
     """Read a variable name from the environment."""
@@ -47,6 +45,7 @@ class Encrypter(object):
 class State(object):
     """A State object."""
 
+    FILE_EXTENSION = "env"
     DJANGO_SECRET_SIZE = 50
     CHAR_LIST = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
 
@@ -69,7 +68,7 @@ class State(object):
                              for i in range(cls.DJANGO_SECRET_SIZE))
         result['SECRET_KEY'] = encrypter.encrypt(secret_key)
 
-        final_filename = '{}.{}'.format(name, FILE_EXTENSION)
+        final_filename = '{}.{}'.format(name, cls.FILE_EXTENSION)
         with open(final_filename, 'w') as env_file:
             env_file.write(json.dumps(result, indent=4, sort_keys=True))
 
@@ -205,7 +204,7 @@ class StateList(object):
 
     def read_list(self):
         """Read the list of files."""
-        env_files = glob.glob('*.{}'.format(FILE_EXTENSION))
+        env_files = glob.glob('*.{}'.format(State.FILE_EXTENSION))
         for i in range(len(env_files)):
             try:
                 state = State(env_files[i], key=self.key)
