@@ -159,6 +159,11 @@ class State(object):
         for k in self.data:
             yield (k, self.data[k])
 
+    def get(self):
+        """Return a collection of the data."""
+        for k in self.data:
+            yield (k, self.data[k])
+
     def remove(self, key):
         """Remove variable by name."""
         key = key.upper()

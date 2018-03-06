@@ -43,6 +43,9 @@ class StateCreationTestCase(CommonTestCase):
         'unittest-developer', 'unittest-microservice'
     ]
 
+    VARKEY = "UNITTEST"
+    VARVALUE = "value"
+
     def create_levels(self, levels=None):
         """Create new levels, saving the required files."""
         if levels is None:
@@ -65,9 +68,6 @@ class StateCreationTestCase(CommonTestCase):
 
 class CryptoState(StateCreationTestCase):
     """Test operation of the State object."""
-
-    VARKEY = "UNITTEST"
-    VARVALUE = "value"
 
     def create_and_read_level(self):
         """Create and reads back a level."""
@@ -156,3 +156,38 @@ class CryptoStateList(StateCreationTestCase):
             state = StateList(key=key).get()
             self.assertEqual(state.name, self.DEFAULT_LEVELS[i],
                              'Could not read an environment from a key')
+
+    def test_transcode_variables(self):
+        """Transcode an environment."""
+        key_list = self.create_levels(self.DEFAULT_LEVELS[:2])
+
+        # we read both environments
+        state_a = StateList(key=key_list[0]).get()
+        state_b = StateList(key=key_list[1]).get()
+
+        # add a variable to state a
+        state_a.add(self.VARKEY, self.VARVALUE)
+        state_a.save()
+
+        # we read state a again
+        state_a = StateList(key=key_list[0]).get()
+
+        for key, value in state_a:
+            state_b.add(key, value)
+        state_b.save()
+
+        # read state b again
+        state_b = StateList(key=key_list[1]).get()
+
+        # check that they both have the same variables
+        for key, value in state_a.get():
+            if key == State.SECRET_KEY:
+                # make sure the secret keys are different
+                self.assertNotEqual(
+                    value, state_b.django_secret,
+                    "Django Secret Keys was copied to the transcoded envinroment."
+                )
+
+            else:
+                self.assertIn(key, state_b.data)
+                self.assertEqual(value, state_b.data[key])
