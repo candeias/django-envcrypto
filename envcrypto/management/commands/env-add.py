@@ -23,7 +23,7 @@ class Command(BaseCommand):
                force=False,
                **options):
         """Create a new environment file with the name and a new KEY."""
-        state = StateList(key=key).get()
+        state = StateList(key=key, raise_error_on_key=True).get()
         print("Adding to variable to environment", state.name)
         try:
             state.add(name, value, force=force)

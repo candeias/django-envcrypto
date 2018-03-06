@@ -54,6 +54,13 @@ class State(object):
     SECRET_KEY = 'SECRET_KEY'
     KEY = 'KEY'
 
+    CRYPTO_TYPE = 'cryto_family'
+    CRYPTO_ALGORITHM = 'crypto_algorithm'
+
+    VERSION = 'version'
+
+    CURRENT_VERSION = '0.8.3'
+
     @classmethod
     def new(cls, name):
         """Read a State from a file."""
@@ -61,6 +68,9 @@ class State(object):
         encrypter = Encrypter(key)
         result = {}
         result[cls.NAME] = name
+        result[cls.CRYPTO_TYPE] = 'symmetric'
+        result[cls.CRYPTO_ALGORITHM] = 'fernet'
+        result[cls.VERSION] = cls.CURRENT_VERSION
         result[cls.SIGNED_NAME] = encrypter.encrypt(name)
 
         # set the django secret key
@@ -82,6 +92,9 @@ class State(object):
         """Set the variables."""
         self.filename = filename
         self.name = None
+        self.crypto_type = None
+        self.crypto_algorithm = None
+        self.version = None
         self.django_secret = None
         self.data = {}
         self.key = key
@@ -112,23 +125,57 @@ class State(object):
         except:
             raise InvalidKey
 
+        # read the self properties
+        do_version_update = False
         self.name = env_object[self.NAME]
+        try:
+            self.crypto_type = env_object[self.CRYPTO_TYPE]
+        except:
+            self.crypto_type = 'symmetric'
+            do_version_update = True
+        try:
+            self.crypto_algorithm = env_object[self.CRYPTO_ALGORITHM]
+        except:
+            self.crypto_algorithm = 'fernet'
+            do_version_update = True
+
+        try:
+            self.version = env_object[self.VERSION]
+        except:
+            self.version = self.CURRENT_VERSION
+            do_version_update = True
+
         self.django_secret = self.encrypter.decrypt(
             env_object[self.SECRET_KEY])
 
         # read the remaing variables
         for k in env_object:
-            if k not in [self.NAME, self.SIGNED_NAME, self.SECRET_KEY]:
+            if k not in [
+                    self.NAME, self.SIGNED_NAME, self.SECRET_KEY,
+                    self.CRYPTO_ALGORITHM, self.CRYPTO_TYPE, self.VERSION
+            ]:
                 try:
                     self.data[k] = self.encrypter.decrypt(env_object[k])
                 except:
                     raise InvalidKey
+
+        if do_version_update:
+            self.update()
+
+    def update(self):
+        """Update the file to the current version."""
+        print("Updating your environment file")
+        self.save()
 
     def save(self):
         """Save the State to disk."""
         result = {}
         result[self.NAME] = self.name
         result[self.SIGNED_NAME] = self.encrypter.encrypt(self.name)
+        result[self.CRYPTO_TYPE] = self.crypto_type
+        result[self.CRYPTO_ALGORITHM] = self.crypto_algorithm
+        result[self.VERSION] = self.version
+
         result[self.SECRET_KEY] = self.encrypter.encrypt(self.django_secret)
 
         for k in self.data:
@@ -176,7 +223,7 @@ class State(object):
 class StateList(object):
     """Read a list of states."""
 
-    def __init__(self, *args, key=None, **kwargs):
+    def __init__(self, *args, key=None, raise_error_on_key=False, **kwargs):
         """Read the list of states."""
         self.key = key
         self.current_state = None
@@ -185,10 +232,11 @@ class StateList(object):
             try:
                 self.key = read_env("KEY")
             except:
-                # TODO: add a warning to the log
-                # print(
-                #     "Warning: django-envcrypto can't find a KEY in the environment. It will continue without injecting any variable."
-                # )
+                if raise_error_on_key:
+                    print(
+                        "Warning: django-envcrypto can't find a KEY in the environment. It will continue without injecting any variable."
+                    )
+                    raise EnvKeyNotFound
                 return
 
         try:

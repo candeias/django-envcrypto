@@ -2,6 +2,7 @@
 from django.core.management.base import BaseCommand
 
 from ...crypto import StateList
+from ...exceptions import VariableExists
 
 
 class Command(BaseCommand):
@@ -20,8 +21,8 @@ class Command(BaseCommand):
                force=False,
                **options):
         """Create a new environment file with the name and a new KEY."""
-        old_state = StateList(key=key).get()
-        new_state = StateList(key=transcode_key).get()
+        old_state = StateList(key=key, raise_error_on_key=True).get()
+        new_state = StateList(key=transcode_key, raise_error_on_key=True).get()
 
         # we iterate the list of states on the current one to the new
         for key_var, value in old_state.get():

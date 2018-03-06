@@ -13,11 +13,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, name=None, key=None, **options):
         """Create a new environment file with the name and a new KEY."""
-        state = StateList(key=key).get()
+        state = StateList(key=key, raise_error_on_key=True).get()
 
         # we are going to either show a variable or all of the variables from
         # the environment
         print("Active environment:", state.name)
-
         for key, value in state:
             print(key, value)

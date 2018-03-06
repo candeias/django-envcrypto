@@ -20,7 +20,7 @@ dependencies:
 
 test:
   override:
-   - exit 0
+   - python manage.py test
 
 deployment:
   build_package:
