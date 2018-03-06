@@ -2,6 +2,7 @@
 from django.core.management.base import BaseCommand
 
 from ...crypto import StateList
+from ...exceptions import VariableExists
 
 
 class Command(BaseCommand):
@@ -11,10 +12,23 @@ class Command(BaseCommand):
         parser.add_argument('name', type=str)
         parser.add_argument('value', type=str)
         parser.add_argument('-k', '--key', type=str)
+        parser.add_argument(
+            '-f', '--force', action='store_true', default=False)
 
-    def handle(self, *args, name=None, value=None, key=None, **options):
+    def handle(self,
+               *args,
+               name=None,
+               value=None,
+               key=None,
+               force=False,
+               **options):
         """Create a new environment file with the name and a new KEY."""
         state = StateList(key=key).get()
         print("Adding to variable to environment", state.name)
-        state.add(name, value)
-        state.save()
+        try:
+            state.add(name, value, force=force)
+            state.save()
+        except VariableExists:
+            print(
+                "{} variable is already defined.\nIn order to force overwriting the value use the -f parameter.".
+                format(name))
