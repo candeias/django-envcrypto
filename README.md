@@ -54,8 +54,8 @@ Lastly, add Django-Envcrypto variables to your django project
 ```python
 from envcrypto import DeployLevel
 
-# Please add a placeholder for your SECRET_KEY, as Django will raise an exception if it is not defined on the settings.py file
-SECRET_KEY = None
+# Please add a placeholder for your SECRET_KEY, as Django will raise an exception if it is not defined on the settings.py file. The secret key will be replaced with a unique one for each DeployLevel automatically.
+SECRET_KEY = "DJANGO-ENVCRYPTO"
 
 DEPLOY = DeployLevel()
 ```
@@ -77,7 +77,7 @@ from enum import Enum
 class MyCustomDeployment(Enum):
 
     DEBUG = 'debug'
-    MULTIVERSE = 'staging'
+    MULTIVERSE = 'multiverse'
     ENVNAME = 'envname'
 ```
 
@@ -145,6 +145,7 @@ if settings.DEPLOY.LEVEL in [Deployment.DEBUG, Deployment.STAGING]:
 ### Accessing the secrets
 
 Assuming you've just added a TWILIO_AUTH_TOKEN secret key through the steps above, it's worth noticing that in order to access the variable from anywhere within your project, all you'll have to do is:
+
 ```python
 import settings
 twilio_token = settings.TWILIO_AUTH_TOKEN
