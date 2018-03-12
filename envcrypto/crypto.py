@@ -61,6 +61,11 @@ class State(object):
 
     CURRENT_VERSION = '0.8.3'
 
+    CONTROLED_VOCABULARY = [
+        NAME, SIGNED_NAME, SECRET_KEY, CRYPTO_ALGORITHM, CRYPTO_TYPE, VERSION
+    ]
+    REQUIRED_VOCABULARY = [NAME, SIGNED_NAME, SECRET_KEY]
+
     @classmethod
     def new(cls, name):
         """Read a State from a file."""
@@ -87,7 +92,12 @@ class State(object):
 
         return state
 
-    def __init__(self, filename, *args, key=None, read_from_env=True,
+    def __init__(self,
+                 filename,
+                 *args,
+                 key=None,
+                 read_from_env=True,
+                 read_empty=False,
                  **kwargs):
         """Set the variables."""
         self.filename = filename
@@ -98,6 +108,7 @@ class State(object):
         self.django_secret = None
         self.data = {}
         self.key = key
+        self.decrypted = False
 
         if key is None and read_from_env:
             self.key = read_env(self.KEY)
@@ -108,23 +119,25 @@ class State(object):
             raise InvalidKey(
                 "The supplied key is not a valid key {}".format(key))
 
-        self.load()
+        self.load(read_empty=read_empty)
 
-    def load(self):
+    def read_file(self):
+        """Read the file and check that it is valid."""
         # read the json file
         try:
             env_object = json.loads(open(self.filename).read())
         except:
             raise InvalidEnvFile
 
-        # try to decrypt the signed name, if we can't we issue a exception
-        if self.SIGNED_NAME not in env_object or self.NAME not in env_object or self.SECRET_KEY not in env_object:
-            raise InvalidEnvFile
-        try:
-            self.encrypter.decrypt(env_object[self.SIGNED_NAME])
-        except:
-            raise InvalidKey
+        # Check that the required vocabulary is available
+        for vocabulary in self.REQUIRED_VOCABULARY:
+            if vocabulary not in env_object:
+                raise InvalidEnvFile
 
+        return env_object
+
+    def process_file_update(self, env_object):
+        """Process any required update to the file format."""
         # read the self properties
         do_version_update = False
         self.name = env_object[self.NAME]
@@ -145,22 +158,56 @@ class State(object):
             self.version = self.CURRENT_VERSION
             do_version_update = True
 
+        return do_version_update
+
+    def load_and_decrypt_data(self, env_object):
+        """We decrypt the data."""
         self.django_secret = self.encrypter.decrypt(
             env_object[self.SECRET_KEY])
 
         # read the remaing variables
         for k in env_object:
-            if k not in [
-                    self.NAME, self.SIGNED_NAME, self.SECRET_KEY,
-                    self.CRYPTO_ALGORITHM, self.CRYPTO_TYPE, self.VERSION
-            ]:
+            if k not in self.CONTROLED_VOCABULARY:
                 try:
                     self.data[k] = self.encrypter.decrypt(env_object[k])
                 except:
                     raise InvalidKey
 
-        if do_version_update:
+    def load_data(self, env_object):
+        """We only load the data."""
+        for k in env_object:
+            if k not in self.CONTROLED_VOCABULARY:
+                self.data[k] = None
+
+    def load(self, read_empty=False):
+        """Load a file and process it."""
+        env_object = self.read_file()
+        # can we decrypt the state?
+        if read_empty:
+            self.load_data(env_object)
+            return
+
+        try:
+            self.encrypter.decrypt(env_object[self.SIGNED_NAME])
+
+        except:
+            # we do nothing if the can decrypt the state
+            raise InvalidKey
+
+        self.decrypted = True
+        self.load_and_decrypt_data(env_object)
+        do_version_update = self.process_file_update(env_object)
+
+        # only decrypt the objects if we have the right key
+        if self.decrypted and do_version_update:
             self.update()
+
+    def check_decrypted(self):
+        """Check that the state is decrypted and raise an exception otherwise."""
+        # if we haven't been able to decrypt the state we raise and exception
+        if not self.decrypted:
+            print("will raise exception")
+            raise InvalidKey
 
     def update(self):
         """Update the file to the current version."""
@@ -169,6 +216,7 @@ class State(object):
 
     def save(self):
         """Save the State to disk."""
+        self.check_decrypted()
         result = {}
         result[self.NAME] = self.name
         result[self.SIGNED_NAME] = self.encrypter.encrypt(self.name)
@@ -226,7 +274,8 @@ class StateList(object):
     def __init__(self, *args, key=None, raise_error_on_key=False, **kwargs):
         """Read the list of states."""
         self.key = key
-        self.current_state = None
+        self.list_of_states = []
+        self.current_state_index = None
 
         if self.key is None:
             try:
@@ -247,13 +296,16 @@ class StateList(object):
 
         self.read_list()
 
-        if self.current_state is None:
+        if self.current_state_index is None:
             # we could find any decryptable state, so we raise an Exception
             raise DeploymentLevelNotFound
 
     def get(self):
         """Return the active state."""
-        return self.current_state
+        if self.current_state_index is None:
+            return None
+
+        return self.list_of_states[self.current_state_index]
 
     def read_list(self):
         """Read the list of files."""
@@ -261,9 +313,12 @@ class StateList(object):
         for i in range(len(env_files)):
             try:
                 state = State(env_files[i], key=self.key)
-                self.current_state = state
-            except:
-                pass
+                self.current_state_index = i
+            except InvalidKey:
+                # still add this tate to
+                state = State(env_files[i], key=self.key, read_empty=True)
+
+            self.list_of_states.append(state)
 
     @property
     def name(self):
