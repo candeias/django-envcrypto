@@ -3,8 +3,8 @@ import os
 import sys
 from enum import Enum
 
-from .crypto import StateList
-from .exceptions import DeploymentIsNotAEnum, EnvFileNotFound, EnvKeyNotFound
+from .exceptions import DeploymentIsNotAEnum
+from .state import StateList
 
 
 class Deployment(Enum):
@@ -34,14 +34,15 @@ class DeployLevel(object):
         self.current_level = None
 
         self.parent = sys.modules[os.environ.get("DJANGO_SETTINGS_MODULE")]
-        self.state = StateList(key=key).get()
+        self.state_list = StateList(key=key)
+        self.state = self.state_list.get()
 
         # use the name of the state to get the current level
         if self.state is None:
             return
 
         self.current_level = levels(self.state.name)
-
+        self.state_list.check_variables()
         self.load_globals()
 
     def load_globals(self):
