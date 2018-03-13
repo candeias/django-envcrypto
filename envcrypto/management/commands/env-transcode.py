@@ -1,8 +1,8 @@
 """Transcode an environment stage to a new one, with the supplied keys."""
 from django.core.management.base import BaseCommand
 
-from ...crypto import StateList
 from ...exceptions import VariableExists
+from ...state import StateList
 
 
 class Command(BaseCommand):
