@@ -1,6 +1,7 @@
 """LevelConfig to describe levels."""
 import glob
 import json
+import logging
 import os
 import random
 
@@ -185,12 +186,11 @@ class State(object):
         """Check that the state is decrypted and raise an exception otherwise."""
         # if we haven't been able to decrypt the state we raise and exception
         if not self.decrypted:
-            print("will raise exception")
             raise InvalidKey
 
     def update(self):
         """Update the file to the current version."""
-        print("Updating your environment file")
+        logging.warning("Updating your environment file")
         self.save()
 
     def save(self):
@@ -271,8 +271,8 @@ class StateList(object):
                 self.key = read_env("KEY")
             except:
                 if raise_error_on_key:
-                    print(
-                        "Warning: django-envcrypto can't find a KEY in the environment. It will continue without injecting any variable."
+                    logging.warning(
+                        "Django-Envcrypto can't find a KEY in the environment. It will continue without injecting any variable."
                     )
                     raise EnvKeyNotFound
                 return
@@ -330,9 +330,9 @@ class StateList(object):
         # finally output any missing variable in a state
         # (the iteration is done again for code clarity)
         for key in missing:
-            if len(missing[key]):
-                print('Warning: variable', key, 'missing in states',
-                      missing[key])
+            if missing[key]:
+                logging.warning('Variable {} missing in states {}'.format(
+                    key, missing[key]))
                 if raise_on_warning:
                     raise VariableMissing
 
