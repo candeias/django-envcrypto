@@ -48,6 +48,11 @@ class VariableExists(DjangoEnvcryptException):
     MESSAGE = "The variable you are adding already exists, you can force it to be modified."
 
 
+class VariableMissing(DjangoEnvcryptException):
+    """A variable is missing from some state files."""
+    pass
+
+
 class DeploymentIsNotAEnum(DjangoEnvcryptException):
     """The Deployment is not an Enum object."""
 

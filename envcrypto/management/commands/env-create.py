@@ -1,7 +1,7 @@
 """Creates a new environment stage."""
 from django.core.management.base import BaseCommand
 
-from ...crypto import State
+from ...state import State
 
 
 class Command(BaseCommand):
