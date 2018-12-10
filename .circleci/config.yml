@@ -1,0 +1,84 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version:                         2.1
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image:                   circleci/python:3.6.5
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image:                 circleci/postgres:9.4
+
+    working_directory:           ~/django-envcrypto
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - run:
+          name:                  Install Dependencies
+          command:               |
+            pip install pipenv
+            pipenv install --dev
+
+
+      # run tests!
+      # this example uses Django's built-in test-runner
+      # other common Python testing frameworks include pytest and nose
+      # https://pytest.org
+      # https://nose.readthedocs.io
+      - run:
+          name:                  run tests
+          command:               |
+            pipenv run ./manage.py test
+
+      - store_artifacts:
+          path:                  test-reports
+          destination:           test-reports
+
+  deploy:
+    docker:
+      - image:                   circleci/python:3.6.5
+
+    working_directory:           ~/django-envcrypto
+
+    environment:
+      AWS_DEFAULT_REGION:        'eu-west-2' # because EU (London) requires "Signature Version 4" apparently
+      PIPENV_VENV_IN_PROJECT:    true
+      VIRTUAL_ENV:               .venv/
+      PIPENV_IGNORE_VIRTUALENVS: 1
+
+    steps:
+      - checkout
+      # Download and cache dependencies
+
+      - run:
+          name:                  Install Dependencies
+          command:               |
+            pip install pipenv
+            pipenv install --dev
+
+      - run:
+          name:                  Deploy module
+          command:               |
+            ./circle-build-package.sh
+
+
+workflows:
+  version:                       2.1
+  build:
+    jobs:
+      - build
+      - deploy:
+          requires:
+          - build
+          filters:
+            branches:
+              only:
+                - master

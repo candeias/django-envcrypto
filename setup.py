@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='django-envcrypto',
-    version='0.8.4',
+    version='0.8.5',
     description='A safe way to store Django environmental Variables',
     long_description='Store Django environmental Variables for multiple deployments, easy and securely.',
     author='Rogerio Candeias',
@@ -18,6 +18,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     tests_require=[
-        'django>=2.0.2', 'mock', 'nose', 'coverage', 'urllib3[secure]'
+        'django>=2.1.4', 'mock', 'nose', 'coverage', 'urllib3[secure]'
     ],
     install_requires=['cryptography>=2.1.4'])
