@@ -67,7 +67,7 @@ jobs:
       - run:
           name:                  Deploy module
           command:               |
-            ./circle-build-package.sh
+            pipenv run ./circle-build-package.sh
 
 
 workflows:
