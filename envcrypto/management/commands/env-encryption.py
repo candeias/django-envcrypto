@@ -7,7 +7,7 @@ from ...state import read_env
 
 
 class Command(BaseCommand):
-    help = 'Add a environment variable using a key'
+    help = 'Encrypt or decrypt a value using a key.'
 
     def add_arguments(self, parser):
         parser.add_argument('value', type=str)

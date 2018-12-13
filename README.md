@@ -111,6 +111,23 @@ Deletes VAR1 from the specified environment. If you omit the -k parameter django
 
 Show all the variables to that environment. If you omit the -k parameter django-envcrypto will read it from your environment.
 
+#### Create a new symetric key
+
+```bash
+./manage.py env-key
+```
+
+Create a new key. This is only to be used as a helper function.
+
+#### Encrypt / Decrypt value
+
+```bash
+./manage.py env-encryption TESTVALUE -k rmFpYnhZ0FzOj2ira9ViW7CwItln-we8eY5yn38t1O8=
+./manage.py env-encryption Z0FBQUFBQmNFbjBKRHNfeElmMTVXQ0ppZkJvQXZtb0xsYmhkVGJtLUVwRVF6eHdTU09XSnFxaVhzdzA2YUc4azlVMXdTLVNXVHBhS1ZYN1BpMGFIRE9uRjdINUkyaVk2MFE9PQ== -k rmFpYnhZ0FzOj2ira9ViW7CwItln-we8eY5yn38t1O8= -d
+```
+
+Encrypt a value or decrypt a digest using a key. This is a helper function.
+
 #### Transcode to another environment
 
 ```bash
