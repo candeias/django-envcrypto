@@ -38,12 +38,19 @@ class State(object):
 
     VERSION = 'version'
 
-    CURRENT_VERSION = '0.8.4'
+    CURRENT_VERSION = '0.8.6'
 
     CONTROLED_VOCABULARY = [
         NAME, SIGNED_NAME, SECRET_KEY, CRYPTO_ALGORITHM, CRYPTO_TYPE, VERSION
     ]
     REQUIRED_VOCABULARY = [NAME, SIGNED_NAME, SECRET_KEY]
+
+    @classmethod
+    def create_django_secret_key(cls):
+        """Create a new djanog secret key."""
+        # set the django secret key
+        return ''.join(random.SystemRandom().choice(cls.CHAR_LIST)
+                       for i in range(cls.DJANGO_SECRET_SIZE))
 
     @classmethod
     def new(cls, name):
@@ -57,10 +64,8 @@ class State(object):
         result[cls.VERSION] = cls.CURRENT_VERSION
         result[cls.SIGNED_NAME] = encrypter.encrypt(name)
 
-        # set the django secret key
-        secret_key = ''.join(random.SystemRandom().choice(cls.CHAR_LIST)
-                             for i in range(cls.DJANGO_SECRET_SIZE))
-        result['SECRET_KEY'] = encrypter.encrypt(secret_key)
+        result['SECRET_KEY'] = encrypter.encrypt(
+            State.create_django_secret_key())
 
         final_filename = '{}.{}'.format(name, cls.FILE_EXTENSION)
         with open(final_filename, 'w') as env_file:
@@ -92,11 +97,7 @@ class State(object):
         if key is None and read_from_env:
             self.key = read_env(self.KEY)
 
-        try:
-            self.encrypter = Encrypter(key=self.key)
-        except:
-            raise InvalidKey(
-                "The supplied key is not a valid key {}".format(key))
+        self.create_encrypter()
 
         self.load(read_empty=read_empty)
 
@@ -192,6 +193,20 @@ class State(object):
         """Update the file to the current version."""
         logging.warning("Updating your environment file")
         self.save()
+
+    def set_key(self, key):
+        """Set a new key for this state."""
+        self.key = key
+        self.create_encrypter()
+        self.django_secret = State.create_django_secret_key()
+
+    def create_encrypter(self):
+        """Create the encrypter with the current key."""
+        try:
+            self.encrypter = Encrypter(key=self.key)
+        except:
+            raise InvalidKey(
+                "The supplied key is not a valid key {}".format(key))
 
     def save(self):
         """Save the State to disk."""
