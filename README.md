@@ -136,6 +136,16 @@ Encrypt a value or decrypt a digest using a key. This is a helper function.
 
 Transcodes all the current ENVKEY variables to the new NEWENVKEY. Django-envcrypto will overwrite any variable that already exists on the new NEWENVKEY (except for the internal variables like SECRET_KEY). If you omit the -k parameter django-envcrypto will read it from your environment.
 
+#### Key rotation
+
+```bash
+./manage.py env-rotate
+```
+
+Creates a new KEY (and outputs it) while using it to re-encrypt all the variables. It also creates a new Django SECRET_KEY, so any feature that relies on it might require user action ([please check Django docs](https://docs.djangoproject.com/en/2.1/ref/settings/#secret-key)).
+This should be your first step into rotating your keys, and any secret you are storing on env-crypto should also be rotated at the apropriate provider.
+
+
 ### Level Management
 
 When Django initializes, django-envproject reads the .env files and determines in with deployment level it currently is. You can read that level from your DEPLOY variable:
