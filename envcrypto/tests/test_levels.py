@@ -1,5 +1,5 @@
 """Test the crypto module."""
-from ..exceptions import DeploymentIsNotAEnum
+from ..exceptions import DeploymentIsNotAEnum, DeploymentIsNotAClass
 from ..levels import DeployLevel, Deployment
 from .tests import CommonTestCase
 from enum import Enum
@@ -26,8 +26,8 @@ class LevelsDeployLevel(CommonTestCase):
     def test_levels_non_enum(self):
         """Deployment should be a enum."""
         with self.assertRaises(
-                DeploymentIsNotAEnum,
-                msg="Non Enum doesn't raise an exception"):
+                DeploymentIsNotAClass,
+                msg="Please pass a class as the run levels"):
             DeployLevel(levels=self.NON_ENUM)
 
     def test_levels_is_valid_enum_should_not_raise(self):
