@@ -26,10 +26,10 @@ class DeployLevel(object):
         if levels is None:
             levels = Deployment
         else:
-            if not isinstance(levels, Enum):
             if not isinstance(levels, type):
                 raise DeploymentIsNotAClass(
                     "Please pass a class as the run levels")
+            if not issubclass(levels, Enum):
                 raise DeploymentIsNotAEnum(
                     "Please pass a Enum as the run levels")
 
