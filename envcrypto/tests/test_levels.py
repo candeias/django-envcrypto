@@ -2,6 +2,13 @@
 from ..exceptions import DeploymentIsNotAEnum
 from ..levels import DeployLevel, Deployment
 from .tests import CommonTestCase
+from enum import Enum
+
+
+class RealDeploymentEnvironments(Enum):
+    DEVELOPMENT = 'development'
+    STAGING = 'staging'
+    PRODUCTION = 'production'
 
 
 class LevelsDeployLevel(CommonTestCase):
@@ -22,3 +29,12 @@ class LevelsDeployLevel(CommonTestCase):
                 DeploymentIsNotAEnum,
                 msg="Non Enum doesn't raise an exception"):
             DeployLevel(levels=self.NON_ENUM)
+
+    def test_levels_is_valid_enum_should_not_raise(self):
+        """DeployLevel should give back the specified enum."""
+        deploy_level = DeployLevel(levels=RealDeploymentEnvironments)
+        self.assertEqual(deploy_level.levels, RealDeploymentEnvironments)
+        self.assertEqual(deploy_level.levels.DEVELOPMENT.value, 'development')
+        self.assertEqual(deploy_level.levels.STAGING.value, 'staging')
+        self.assertEqual(deploy_level.levels.PRODUCTION.value, 'production')
+
