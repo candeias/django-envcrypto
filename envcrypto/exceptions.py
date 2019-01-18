@@ -53,6 +53,12 @@ class VariableMissing(DjangoEnvcryptException):
     pass
 
 
+class DeploymentIsNotAClass(DjangoEnvcryptException):
+    """The Deployment is not a Class object."""
+
+    pass
+
+
 class DeploymentIsNotAEnum(DjangoEnvcryptException):
     """The Deployment is not an Enum object."""
 
